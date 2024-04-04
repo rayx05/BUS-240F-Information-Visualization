@@ -16,3 +16,12 @@ df = read.csv("~/Desktop/BUS 240F/Team Project/NBA_top_75_cleaned.csv", header=T
 view (df)
 summary (df)
 
+# test: Kobe Bryant's field goal attempts per game change over time 
+df1 = filter (df, (Player == "Kobe Bryant"))
+df1
+viz = ggplot (df1, aes (Season.Start.Year, Field.Goal.Attempts.Per.Game)) 
+viz = viz + geom_point(shape=20, color="red", size = 2) 
+viz = viz + geom_line(color="blue")
+viz = viz + geom_text(aes (x = Season.Start.Year, y = Field.Goal.Attempts.Per.Game, label = "Kobe Bryant"))
+viz = viz + theme_minimal() 
+viz
