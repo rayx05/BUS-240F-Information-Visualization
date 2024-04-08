@@ -1,4 +1,4 @@
-#Figure 1-7 
+#Figure 1-6 
 rm(list = ls())
 
 library(ggplot2)
@@ -82,7 +82,7 @@ ggplot(combined_data, aes(`Season #`, BLK, group = Player, color = Source)) + ge
 
 
 
-#Figure 8 - 10 
+#Figure 7 - 9 
 library(tidyverse) 
 library(ggplot2)  
 library(ggridges)
