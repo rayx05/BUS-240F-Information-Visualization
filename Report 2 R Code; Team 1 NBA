@@ -1,0 +1,145 @@
+#Figure 1-7 
+rm(list = ls())
+
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+
+X75thCareerStats <- read_excel("Downloads/InfoVis/75th Season Stats/75thCareerStats.xlsx")
+data = X75thCareerStats
+
+data$Era <- as.factor(data$Era)
+
+ggplot(data, aes(x = `Field Goals`)) + geom_histogram(bins = 15) 
+
+ggplot(data, aes(Era, Points)) + geom_violin() + geom_jitter() 
+
+p <- ggplot(data, aes(Era,`Triple-Doubles`)) + geom_boxplot(outlier.shape = 5) + labs(caption = "14 players are not included in this diagram because they had no data for this metric in the database")
+
+outliers <- boxplot.stats(data$`Triple-Doubles`)$out
+
+p + geom_text(data = data[data$`Triple-Doubles` %in% outliers, ], aes(label = paste(Player,`Triple-Doubles`)), vjust = -1, hjust = 0.6, size = 3, position = position_jitter(width = 0.2))
+
+data_no_current <- data %>% filter(Current == "No")
+
+ggplot(data, aes(x = BLK, y = AST, color = Position, shape = Position)) + geom_point() + stat_ellipse(geom = "polygon", aes(fill = Position), alpha = 0.15, show.legend = FALSE , level = 0.95)
+
+ggplot(data, aes(x = TRB, y = AST, color = Position, shape = Position)) + geom_point() +  stat_ellipse(geom = "polygon", aes(fill = Position), alpha = 0.15, show.legend = FALSE , level = 0.95)
+
+data_75th_season_stats <- read_excel("Downloads/InfoVis/5thAnniversaryComprehensiveStats12345.xlsx")
+X75TeamSnubsStats_75TeamSnubsStats <- read_excel("Downloads/InfoVis/75TeamSnubsStats - 75TeamSnubsStats.xlsx")
+
+data_centers <- data %>%
+    filter(Position == "C")
+    
+data_centers <-  data_75th_season_stats %>%
+    filter(Player %in% data_centers$Player) %>%
+    mutate(Source = "75th Team")
+
+data_snub_centers <- X75TeamSnubsStats_75TeamSnubsStats %>% 
+  filter(Player == "Artis Gilmore" | Player == "Dwight Howard" | Player == "Dikembe Mutombo" | Player == "Pau Gasol" | Player == "Walt Bellamy") %>%
+  filter(Season != "Career") %>%
+  filter(!grepl("Did Not Play", Tm)) %>%
+  mutate(Source = "Snubs")
+
+
+# Find shared columns
+shared_columns <- intersect(names(data_centers), names(data_snub_centers))
+
+# Select only shared columns from each dataset
+data_centers_shared <- data_centers[, shared_columns]
+data_snub_centers_shared <- data_snub_centers[, shared_columns]
+
+data_snub_centers_shared$Grouping <- NA
+data_centers_shared$Grouping <- NA
+
+data_snub_centers_shared$Grouping[data_snub_centers_shared$Player == "Artis Gilmore"] <- 1
+data_snub_centers_shared$Grouping[data_snub_centers_shared$Player == "Dikembe Mutombo"] <- 2
+data_snub_centers_shared$Grouping[data_snub_centers_shared$Player == "Dwight Howard"] <- 3
+data_snub_centers_shared$Grouping[data_snub_centers_shared$Player == "Walt Bellamy"] <- 4
+data_snub_centers_shared$Grouping[data_snub_centers_shared$Player == "Pau Gasol"] <- 5
+
+data_centers_shared$Grouping[data_centers_shared$Player == "Kareem Abdul-Jabbar" | data_centers_shared$Player == "Wilt Chamberlain" | data_centers_shared$Player == "Bill Russell"] <- 1
+data_centers_shared$Grouping[data_centers_shared$Player == "Dave Cowens" | data_centers_shared$Player == "Patrick Ewing" | data_centers_shared$Player == "Moses Malone"] <- 2
+data_centers_shared$Grouping[data_centers_shared$Player == "George Mikan" | data_centers_shared$Player == "Shaquille O'Neal" | data_centers_shared$Player == "Hakeem Olajuwon"] <- 3
+data_centers_shared$Grouping[data_centers_shared$Player == "Robert Parish" | data_centers_shared$Player == "Willis Reed" | data_centers_shared$Player == "David Robinson"] <- 4
+data_centers_shared$Grouping[data_centers_shared$Player == "Nate Thurmond" | data_centers_shared$Player == "Wes Unseld" | data_centers_shared$Player == "Bill Walton"] <- 5
+
+
+# Combine datasets along shared columns
+combined_data <- rbind(data_centers_shared, data_snub_centers_shared)
+
+combined_data <- combined_data %>%
+  filter(!is.na(G))
+
+combined_data$PTS <- as.numeric(combined_data$PTS)
+combined_data$TRB <- as.numeric(combined_data$TRB)
+combined_data$BLK <- as.numeric(combined_data$TRB)
+
+ggplot(combined_data, aes(`Season #`, PTS, group = Player, color = Source)) + geom_line() + facet_wrap(~Grouping) + labs(caption = "Groups of 75th Anniversary Players were randomly assigned to 1 snub to make the graphs easier to understand", title = "Comparing Snubs vs 75th Team Members Across Careers (Centers)")
+ggplot(combined_data, aes(`Season #`, TRB, group = Player, color = Source)) + geom_line() + facet_wrap(~Grouping) + labs(caption = "Groups of 75th Anniversary Players were randomly assigned to 1 snub to make the graphs easier to understand", title = "Comparing Snubs vs 75th Team Members Across Careers (Centers)")
+ggplot(combined_data, aes(`Season #`, BLK, group = Player, color = Source)) + geom_line() + facet_wrap(~Grouping) + labs(caption = "Groups of 75th Anniversary Players were randomly assigned to 1 snub to make the graphs easier to understand", title = "Comparing Snubs vs 75th Team Members Across Careers (Centers)")
+
+
+
+#Figure 8 - 10 
+library(tidyverse) 
+library(ggplot2)  
+library(ggridges)
+
+
+library(RColorBrewer)
+
+
+display.brewer.all(7, type="seq", colorblindFriendly = "True")
+display.brewer.all(7, type="div", colorblindFriendly = "True")
+display.brewer.all(7, type="qual", colorblindFriendly = "True")
+display.brewer.pal(5, "PuOr")    
+display.brewer.pal(5, "Reds")    
+display.brewer.pal(5, "Accent")  
+
+#data frame 
+df = read.csv("~/Desktop/BUS 240F/Team Project/Report 2/NBA_Database_Cleaned.csv", header=TRUE)
+print (df)
+
+
+#compute field goal percentage 
+#step 1: compute the total field goals of each season 
+df$Total.Field.Goals = round (df$Field.Goals.Per.Game * df$Games, digits = 0)
+Total.Field.Goals = aggregate(Total.Field.Goals ~ Player, df, sum)
+Sorted.Total.field.Goals = Total.Field.Goals[order(Total.Field.Goals$Total.Field.Goals, decreasing = TRUE), ]
+Sorted.Total.field.Goals #this result shows players with the most field goals 
+top.ten.tfg = head(Sorted.Total.field.Goals, 10) #top ten players with the most field goals scored
+top.ten.tfg 
+viz = ggplot(top.ten.tfg, aes(x = reorder(Player, -Total.Field.Goals), y = Total.Field.Goals)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Top Ten Players by Total Field Goals",
+       x = "Player",
+       y = "Total Field Goals") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+viz
+
+#step 2: compute the total field goal attempts of each season 
+df$Total.Field.Goal.Attempts = round (df$Field.Goal.Attempts.Per.Game * df$Games, digits = 0)
+
+Total.Field.Goal.Attempts = aggregate(Total.Field.Goal.Attempts ~ Player, df, sum)
+Total.Field.Goal.Attempts
+Sorted.Total.Field.Goal.Attempts = Total.Field.Goal.Attempts[order(Total.Field.Goal.Attempts$Total.Field.Goal.Attempts, decreasing = TRUE),]
+Sorted.Total.Field.Goal.Attempts
+
+
+#step 3: compute accuracy 
+df$accuracy = df$Total.Field.Goals / df$Total.Field.Goal.Attempts
+accuracy = aggregate (accuracy ~ Player, df, mean)
+accuracy
+sorted.accuracy = accuracy [order(accuracy$accuracy, decreasing = TRUE),]
+sorted.accuracy
+top.ten.accuracy = head(sorted.accuracy, 10)
+top.ten.accuracy
+vis = ggplot(top.ten.accuracy, aes(x = reorder(Player, -accuracy), y = accuracy)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Top Ten Players by Field Goal Accuracy",
+       x = "Player",
+       y = "Accuracy") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+vis
